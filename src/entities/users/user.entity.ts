@@ -8,13 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsString,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { GroupChat } from '../groups/group-chat.entity';
 import { Post } from '../posts/post.entity';
 import { Serizes } from '../serizes/serizes.entity';
@@ -80,13 +74,14 @@ export class User {
    * 좋아하는 과목
    * @example "MATH"
    */
-  @IsEnum(SubjectType)
+  @IsNotEmpty({ message: '좋아하는 과목을 입력해주세요.' })
   @Column({
     type: 'enum',
     enum: SubjectType,
     nullable: false,
   })
   favoriteSubject: SubjectType;
+
   /**
    * 자기 소개
    * @example "안녕하세요! 수학을 사랑하는 학생입니다."
