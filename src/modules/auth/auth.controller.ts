@@ -7,19 +7,19 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto } from 'src/dtos/sign-in.dto';
-import { SignUpDto } from 'src/dtos/sign-up.dto';
+import { SignInDto } from 'src/dtos/auth/sign-in.dto';
+import { SignUpDto } from 'src/dtos/auth/sign-up.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
-@Controller('/v1/auth')
+@Controller('/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   /**
    *  회원가입
    * @returns
    * */
-  @Post('sign-up')
+  @Post('/sign-up')
   @HttpCode(201)
   signUp(@Body() signUpDto: SignUpDto) {
     return this.authService.signUp(signUpDto);
@@ -28,7 +28,7 @@ export class AuthController {
    *  로그인
    * @returns
    * */
-  @Post('sign-in')
+  @Post('/sign-in')
   @HttpCode(200)
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto);
@@ -37,9 +37,10 @@ export class AuthController {
    *  토큰 재발급
    * @param req
    * @returns
-   * */ @ApiBearerAuth()
+   * */
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('refreshToken'))
-  @Post('reissue')
+  @Post('/reissue')
   reissueToken(@Req() req: any) {
     const refreshToken = req.headers['authorization']?.split(' ')[1];
     return this.authService.reissueToken(req.user.id, refreshToken);
@@ -52,7 +53,7 @@ export class AuthController {
    * */
   @ApiBearerAuth()
   @UseGuards(AuthGuard('refreshToken'))
-  @Post('sign-out')
+  @Post('/sign-out')
   update(userId: number) {
     return this.authService.signOut(userId);
   }
