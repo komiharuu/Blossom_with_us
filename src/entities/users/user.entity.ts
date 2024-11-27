@@ -99,7 +99,7 @@ export class User {
   updatedAt: Date;
 
   @DeleteDateColumn()
-  deletedAt: Date | null;
+  deletedAt: Date;
 
   // Relation - [users] 1: N [posts]
   @OneToMany(() => Post, (post) => post.user)

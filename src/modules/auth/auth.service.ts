@@ -10,9 +10,9 @@ import { User } from 'src/entities/users/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { SignUpDto } from 'src/dtos/sign-up.dto';
+import { SignUpDto } from 'src/dtos/auth/sign-up.dto';
 import { compare, hash } from 'bcrypt';
-import { SignInDto } from 'src/dtos/sign-in.dto';
+import { SignInDto } from 'src/dtos/auth/sign-in.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +27,7 @@ export class AuthService {
       email,
       nickname,
       password,
-      passwordCheck,
+      passwordConfirm,
       favoriteSubject,
       introduce,
     } = signUpDto;
@@ -49,20 +49,20 @@ export class AuthService {
     }
 
     // 비밀번호 일치 확인
-    if (password !== passwordCheck) {
+    if (password !== passwordConfirm) {
       throw new ConflictException(
         '비밀번호가 일치하지 않습니다. 다시 입력해주세요.',
       );
     }
 
     // 비밀번호 해싱
-    const hashPassword = await hash(password, 10);
+    const hashedPassword = await hash(password, 10);
 
     // 새로운 사용자 저장
     const newUser = await this.userRepository.save({
       email,
       nickname,
-      password: hashPassword,
+      password: hashedPassword,
       favoriteSubject, // SubjectType enum 배열로 저장
       introduce,
     });
@@ -76,7 +76,6 @@ export class AuthService {
   //토큰 발급
   async generateToken(userId: number) {
     const payload = { id: userId };
-
     // 액세스 토큰 생성
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('ACCESS_SECRET'),
