@@ -3,7 +3,6 @@ import {
   Get,
   Body,
   Patch,
-  Param,
   Delete,
   UseGuards,
   Req,
@@ -23,10 +22,18 @@ export class UsersController {
   //   return this.usersService.findAll();
   // }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.usersService.findOne(+id);
-  // }
+  /**
+   *  내 프로필 조회
+   * @param req
+   * @returns
+   * */
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('accessToken'))
+  @Get()
+  getUser(@Req() req: any) {
+    const userId = req.user.id;
+    return this.usersService.getUser(userId);
+  }
 
   /**
    *  회원정보 수정
@@ -36,7 +43,7 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('accessToken'))
   @Patch()
-  update(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
+  updateUser(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
     const userId = req.user.id;
     return this.usersService.updateUser(updateUserDto, userId); // updateUserDto와 userId를 전달
   }
@@ -49,7 +56,7 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('accessToken'))
   @Delete()
-  remove(@Req() req: any, @Body() deleteUserDto: DeleteUserDto) {
+  removeUser(@Req() req: any, @Body() deleteUserDto: DeleteUserDto) {
     const userId = req.user.id;
     return this.usersService.removeUser(deleteUserDto, userId);
   }
