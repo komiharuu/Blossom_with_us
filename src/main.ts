@@ -4,10 +4,14 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
+import * as Sentry from '@sentry/node';
 
 async function bootstrap() {
   // NestExpressApplication는 Express 기능을 Nest.js에서 활용할 수 있게 해줌
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+  });
   const configService = app.get(ConfigService);
   const port = configService.get<number>('SERVER_PORT');
   app.setGlobalPrefix('/api/v1');
