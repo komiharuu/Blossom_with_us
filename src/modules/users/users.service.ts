@@ -88,4 +88,25 @@ export class UsersService {
       message: `${deleteReason}의 이유로 탈퇴했습니다`,
     };
   }
+
+  async getUser(
+    userId: number,
+  ): Promise<Omit<User, 'password' | 'refreshToken'>> {
+    // 사용자 검색
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    // 사용자 없을 경우 예외 처리
+    if (!user) {
+      throw new NotFoundException(`사용자를 찾을 수 없습니다.`);
+    }
+
+    // 민감 정보 제거
+    delete user.password;
+    delete user.refreshToken;
+
+    // `password`와 `refreshToken`을 제거한 객체만 반환
+    return user;
+  }
 }
