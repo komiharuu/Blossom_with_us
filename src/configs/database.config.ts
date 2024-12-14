@@ -16,8 +16,6 @@ export const typeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
     const dbUser = configService.get<string>('DB_USER');
     const dbPassword = configService.get<string>('DB_PASSWORD');
     const dbName = configService.get<string>('DB_NAME');
-    const dbSync = configService.get<boolean>('DB_SYNC');
-
     return {
       type: 'postgres',
       host: dbHost,
@@ -25,7 +23,7 @@ export const typeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
       username: dbUser,
       password: dbPassword,
       database: dbName,
-      synchronize: dbSync,
+      synchronize: true,
       entities: ['dist/**/*.entity.js'],
       extra: {
         ssl: {

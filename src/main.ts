@@ -13,6 +13,7 @@ async function bootstrap() {
     dsn: process.env.SENTRY_DSN,
   });
   const configService = app.get(ConfigService);
+
   const port = configService.get<number>('SERVER_PORT');
   app.setGlobalPrefix('/api/v1');
   app.useGlobalPipes(

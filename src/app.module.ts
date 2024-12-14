@@ -14,9 +14,11 @@ import { PostsModule } from './modules/posts/posts.module';
 import { SerizesModule } from './modules/serizes/serizes.module';
 import { ImagesModule } from './modules/images/images.module';
 import { CommentsModule } from './modules/comments/comments.module';
+import { RedisModule } from './configs/redis.module';
 
 @Module({
   imports: [
+    RedisModule,
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: configModuleValidationSchema,
@@ -33,6 +35,7 @@ import { CommentsModule } from './modules/comments/comments.module';
     ImagesModule,
     CommentsModule,
   ],
+
   controllers: [AppController],
   providers: [AppService],
 })
