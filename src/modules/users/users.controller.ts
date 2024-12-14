@@ -8,8 +8,8 @@ import {
   Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { DeleteUserDto } from '../../dtos/user/delete-user.dto';
-import { UpdateUserDto } from '../../dtos/user/update-user.dto';
+import { DeleteUserDto } from 'src/dtos/users/delete-users.dto';
+import { UpdateUserDto } from 'src/dtos/users/update-users.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -30,9 +30,9 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('accessToken'))
   @Get()
-  getUser(@Req() req: any) {
+  async getUser(@Req() req: any) {
     const userId = req.user.id;
-    return this.usersService.getUser(userId);
+    return await this.usersService.getUser(userId);
   }
 
   /**
@@ -43,9 +43,9 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('accessToken'))
   @Patch()
-  updateUser(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
+  async updateUser(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
     const userId = req.user.id;
-    return this.usersService.updateUser(updateUserDto, userId); // updateUserDto와 userId를 전달
+    return await this.usersService.updateUser(updateUserDto, userId); // updateUserDto와 userId를 전달
   }
 
   /**
@@ -56,8 +56,8 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('accessToken'))
   @Delete()
-  removeUser(@Req() req: any, @Body() deleteUserDto: DeleteUserDto) {
+  async removeUser(@Req() req: any, @Body() deleteUserDto: DeleteUserDto) {
     const userId = req.user.id;
-    return this.usersService.removeUser(deleteUserDto, userId);
+    return await this.usersService.removeUser(deleteUserDto, userId);
   }
 }

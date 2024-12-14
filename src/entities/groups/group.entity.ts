@@ -12,12 +12,12 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { SubjectType } from 'src/commons/types/subject.type';
-import { IsEnum, IsNotEmpty, MinLength } from 'class-validator';
+import { IsEnum } from 'class-validator';
 import { MeetingArea } from 'src/commons/types/reigon.type';
-import { Day } from 'src/commons/types/day.type';
 import { Notice } from '../notices/notice.entity';
 import { GroupChatRoom } from './group-chat-room.entity';
 import { GroupMember } from './group-member.entity';
+import { GroupSchedule } from './groups-schedule.entity';
 
 @Entity({ name: 'groups' })
 export class Group {
@@ -32,7 +32,7 @@ export class Group {
    * 그룹명
    * @example "시카고와 수학자들"
    */
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: false, unique: true })
   groupName: string;
 
   @Column({ type: 'varchar' })
@@ -58,34 +58,11 @@ export class Group {
   meetingArea: MeetingArea;
 
   /**
-   * 모임 날짜
-   * @example "MON"
-   */
-  @Column({ type: 'enum', enum: Day, nullable: false })
-  meetingDay: Day;
-
-  /**
    * 공연 설명
    * @example "안녕하세요! 저희는 수학 실력 향상과 함께 성장을 목표로 하고 있는 그룹입니다."
    */
-  @IsNotEmpty({ message: '그룹 소개를 입력해 주세요' })
-  @MinLength(10, { message: '그룹 소개는 10자 이상이어야 합니다.' })
   @Column({ type: 'text', nullable: false })
   groupIntroduce: string;
-
-  /**
-   * 시작 시간
-   * @example "14:30"
-   */
-  @Column({ type: 'time' })
-  startTime: string;
-
-  /**
-   * 종료 시간
-   * @example "16:30"
-   */
-  @Column({ type: 'time' })
-  endTime: string;
 
   /**
    * 총 정원
@@ -114,6 +91,12 @@ export class Group {
   // Relation - [groups] 1 : N [notices]
   @OneToMany(() => Notice, (notice) => notice.group, { onDelete: 'CASCADE' })
   notice: Notice[];
+
+  // Relation - [groups] 1 : N [group_schedules]
+  @OneToMany(() => GroupSchedule, (groupSchedule) => groupSchedule.group, {
+    onDelete: 'CASCADE',
+  })
+  groupSchedule: GroupSchedule[];
 
   // Relation - [groups] 1 : N [chatrooms]
   @OneToMany(() => GroupChatRoom, (chatroom) => chatroom.group, {

@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { MemberType } from 'src/commons/types/group.type';
@@ -28,6 +29,9 @@ export class GroupMember {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date | null;
 
   // Relation - [group_members] N : 1 [users]
   @ManyToOne(() => User, (user) => user.groupMembers, { onDelete: 'CASCADE' })

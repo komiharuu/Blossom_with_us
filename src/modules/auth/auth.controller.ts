@@ -21,8 +21,8 @@ export class AuthController {
    * */
   @Post('/sign-up')
   @HttpCode(201)
-  signUp(@Body() signUpDto: SignUpDto) {
-    return this.authService.signUp(signUpDto);
+  async signUp(@Body() signUpDto: SignUpDto) {
+    return await this.authService.signUp(signUpDto);
   }
   /**
    *  로그인
@@ -30,8 +30,8 @@ export class AuthController {
    * */
   @Post('/sign-in')
   @HttpCode(200)
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto);
+  async signIn(@Body() signInDto: SignInDto) {
+    return await this.authService.signIn(signInDto);
   }
   /**
    *  토큰 재발급
@@ -41,9 +41,9 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('refreshToken'))
   @Post('/reissue')
-  reissueToken(@Req() req: any) {
+  async reissueToken(@Req() req: any) {
     const refreshToken = req.headers['authorization']?.split(' ')[1];
-    return this.authService.reissueToken(req.user.id, refreshToken);
+    return await this.authService.reissueToken(req.user.id, refreshToken);
   }
 
   /**
@@ -54,7 +54,7 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('refreshToken'))
   @Post('/sign-out')
-  update(userId: number) {
-    return this.authService.signOut(userId);
+  async signOut(userId: number) {
+    return await this.authService.signOut(userId);
   }
 }

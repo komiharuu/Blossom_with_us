@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hash } from 'bcrypt';
-import { DeleteUserDto } from 'src/dtos/user/delete-user.dto';
-import { UpdateUserDto } from 'src/dtos/user/update-user.dto';
+import { DeleteUserDto } from 'src/dtos/users/delete-users.dto';
+import { UpdateUserDto } from 'src/dtos/users/update-users.dto';
 import { User } from 'src/entities/users/user.entity';
 import { Repository } from 'typeorm';
 
@@ -89,9 +89,7 @@ export class UsersService {
     };
   }
 
-  async getUser(
-    userId: number,
-  ): Promise<Omit<User, 'password' | 'refreshToken'>> {
+  async getUser(userId: number) {
     // 사용자 검색
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -102,7 +100,6 @@ export class UsersService {
       throw new NotFoundException(`사용자를 찾을 수 없습니다.`);
     }
 
-    // 민감 정보 제거
     delete user.password;
     delete user.refreshToken;
 

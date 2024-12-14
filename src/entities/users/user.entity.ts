@@ -20,6 +20,7 @@ import { Subscription } from '../serizes/subscription.entity';
 import { Notice } from '../notices/notice.entity';
 import { GroupChatRoom } from '../groups/group-chat-room.entity';
 import { GroupMember } from '../groups/group-member.entity';
+import { GroupSchedule } from '../groups/groups-schedule.entity';
 
 @Entity({
   name: 'users',
@@ -126,7 +127,6 @@ export class User {
   subscription: Subscription[];
 
   // Relation [users] 1 : N [group_chatrooms]
-
   @OneToMany(() => GroupChatRoom, (groupChatRoom) => groupChatRoom.member)
   groupChatRoom: GroupChatRoom[];
 
@@ -137,4 +137,8 @@ export class User {
   // Relation [users] 1 : N [groupmembers]
   @OneToMany(() => GroupMember, (groupmember) => groupmember.user)
   groupMembers: GroupMember[];
+
+  // Relation - [users] 1: N [group_schedules]
+  @OneToMany(() => GroupSchedule, (groupSchedule) => groupSchedule.user)
+  groupSchedules: GroupSchedule[];
 }
