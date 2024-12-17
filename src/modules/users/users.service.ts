@@ -114,12 +114,10 @@ export class UsersService {
   }
 
   //사용자 생성 그룹 조회
-  async getUserGroupList(req: any) {
-    const userId = req.user.id;
+  async getUserGroupList(userId: number) {
     const groups = await this.groupRepository.find({
       where: { userId },
     });
-
     return groups;
   }
 

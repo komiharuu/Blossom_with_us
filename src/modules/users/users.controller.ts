@@ -17,11 +17,6 @@ import { AuthGuard } from '@nestjs/passport';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // @Get()
-  // findAll() {
-  //   return this.usersService.findAll();
-  // }
-
   /**
    *  내 프로필 조회
    * @param req
@@ -60,6 +55,7 @@ export class UsersController {
     const userId = req.user.id;
     return await this.usersService.removeUser(deleteUserDto, userId);
   }
+
   /**
    * 사용자 생성 그룹 조회
    * @param req
@@ -69,8 +65,10 @@ export class UsersController {
   @UseGuards(AuthGuard('accessToken'))
   @Get('/groups')
   async getUserGroupList(@Req() req: any) {
-    return await this.usersService.getUserGroupList(req.user);
+    const userId = req.user.id;
+    return await this.usersService.getUserGroupList(userId);
   }
+
   /**
    * 사용자 가입 그룹 조회
    * @param req

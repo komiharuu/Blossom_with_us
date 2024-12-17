@@ -102,6 +102,7 @@ export class GroupsController {
    * @returns
    */
   @Post(':groupId/join')
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('accessToken'))
   async joinGroup(@Param('groupId') groupId: number, @Req() req: any) {
     const user = req.user;
