@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -156,43 +157,178 @@ export class GroupsService {
     }
     return group;
   }
+  async updateGroup(
+    groupId: number,
+    updateGroupDto: UpdateGroupDto,
+    user: User,
+  ) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-  async updateGroup(groupId: number, updateGroupDto: UpdateGroupDto, req: any) {
-    const group = await this.groupRepository.findOne({
-      where: { id: groupId },
-    });
-    if (!group) throw new NotFoundException('그룹이 존재하지 않습니다.');
+    const {
+      groupName,
+      subject,
+      meetingArea,
+      groupIntroduce,
+      members,
+      groupSchedules = [],
+    } = updateGroupDto;
 
-    // 그룹 리더가 맞는지 검증
-    if (group.userId !== req.user.id) {
-      throw new NotFoundException('그룹 정보를 수정할 권한이 없습니다.');
+    try {
+      // 그룹 리더 검증
+      const group = await queryRunner.manager.findOne(Group, {
+        where: { id: groupId }, // 그룹 ID로 그룹을 찾습니다
+      });
+
+      if (!group) {
+        throw new NotFoundException('그룹을 찾을 수 없습니다.');
+      }
+
+      // 그룹의 리더인지 확인
+      if (group.userId !== user.id) {
+        throw new ConflictException('권한이 없습니다.');
+      }
+
+      // 기존 그룹 찾기
+      const existingGroup = await queryRunner.manager.findOne(Group, {
+        where: { id: groupId },
+      });
+
+      if (!existingGroup) {
+        throw new NotFoundException('그룹을 찾을 수 없습니다.');
+      }
+
+      // 기존 멤버 수 확인 (기존 그룹에서 멤버 수 확인, 리더를 제외한 멤버 수)
+      const existingMembersCount = await queryRunner.manager.count(
+        GroupMember,
+        {
+          where: { groupId },
+        },
+      );
+
+      const availableMembers = members - existingMembersCount;
+
+      // 그룹 업데이트
+      await queryRunner.manager.update(Group, groupId, {
+        groupName,
+        subject,
+        meetingArea,
+        groupIntroduce,
+        members,
+        availableMembers, // 새로운 availableMembers 값
+      });
+
+      // 그룹 스케줄 업데이트 또는 추가
+      for (const schedule of groupSchedules) {
+        const existingSchedule = await queryRunner.manager.findOne(
+          GroupSchedule,
+          {
+            where: {
+              groupId: groupId,
+              meetingDay: schedule.meetingDay,
+              startTime: LessThan(schedule.endTime),
+              endTime: MoreThan(schedule.startTime),
+            },
+          },
+        );
+
+        if (existingSchedule) {
+          // 기존 스케줄 업데이트
+          await queryRunner.manager.update(GroupSchedule, existingSchedule.id, {
+            startTime: schedule.startTime,
+            endTime: schedule.endTime,
+          });
+        }
+      }
+
+      // 트랜잭션 커밋
+      await queryRunner.commitTransaction();
+
+      // 업데이트된 그룹 조회
+      const updatedGroup = await queryRunner.manager.findOne(Group, {
+        where: { id: groupId },
+      });
+      const updatedGroupSchedules = await queryRunner.manager.find(
+        GroupSchedule,
+        { where: { groupId } },
+      );
+
+      // 업데이트된 그룹과 그룹 스케줄 반환
+      return {
+        updatedGroup,
+        groupSchedules: updatedGroupSchedules,
+      };
+
+      // 업데이트된 그룹과 그룹 스케줄 반환
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-    // 그룹이 존재하는지 검증
-    if (!group) {
-      throw new NotFoundException('그룹이 존재하지 않습니다.');
-    }
-
-    const newGroup = await this.groupRepository.save({
-      ...group,
-      ...updateGroupDto,
-    });
-    return newGroup;
   }
 
   async removeGroup(groupId: number, req: any) {
-    const group = await this.groupRepository.findOne({
-      where: { id: groupId },
-    });
-    if (!group) {
-      throw new NotFoundException('그룹이 존재하지 않습니다.');
-    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    // 그룹 리더가 맞는지 검증
-    if (group.userId !== req.user.id) {
-      throw new NotFoundException('해당 그룹을 삭제할 권한이 없습니다.');
-    }
+    try {
+      // 그룹 조회
+      const group = await queryRunner.manager.findOne(Group, {
+        where: { id: groupId },
+      });
+      if (!group) {
+        throw new NotFoundException('그룹이 존재하지 않습니다.');
+      }
 
-    group.deletedAt = new Date();
+      // 그룹 리더 권한 확인
+      if (group.userId !== req.user.id) {
+        throw new ForbiddenException('해당 그룹을 삭제할 권한이 없습니다.');
+      }
+
+      // 그룹 삭제 (softDelete)
+      await queryRunner.manager.softDelete(Group, groupId);
+
+      // 그룹 멤버 논리적 삭제
+      const groupMembers = await queryRunner.manager.find(GroupMember, {
+        where: { groupId },
+      });
+      if (groupMembers.length > 0) {
+        await Promise.all(
+          groupMembers.map((member) =>
+            queryRunner.manager.softDelete(GroupMember, member.id),
+          ),
+        );
+      }
+
+      // 그룹 스케줄 물리적 삭제
+      const groupSchedules = await queryRunner.manager.find(GroupSchedule, {
+        where: { groupId },
+      });
+      if (groupSchedules.length > 0) {
+        await Promise.all(
+          groupSchedules.map((schedule) =>
+            queryRunner.manager.softDelete(GroupSchedule, schedule.id),
+          ),
+        );
+      }
+
+      // 트랜잭션 커밋
+      await queryRunner.commitTransaction();
+
+      return {
+        message: '그룹과 관련된 모든 데이터를 성공적으로 삭제했습니다.',
+      };
+    } catch (error) {
+      // 트랜잭션 롤백
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // 연결 종료
+      await queryRunner.release();
+    }
   }
 
   //큐에 작업 추가하는 함수

@@ -60,4 +60,26 @@ export class UsersController {
     const userId = req.user.id;
     return await this.usersService.removeUser(deleteUserDto, userId);
   }
+  /**
+   * 사용자 생성 그룹 조회
+   * @param req
+   * @returns
+   * */
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('accessToken'))
+  @Get('/groups')
+  async getUserGroupList(@Req() req: any) {
+    return await this.usersService.getUserGroupList(req.user);
+  }
+  /**
+   * 사용자 가입 그룹 조회
+   * @param req
+   * @returns
+   * */
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('accessToken'))
+  @Get('/join-groups')
+  async getUserJoinGroupList(@Req() req: any) {
+    return await this.usersService.getUserJoinGroupList(req.user);
+  }
 }

@@ -8,6 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { hash } from 'bcrypt';
 import { DeleteUserDto } from 'src/dtos/users/delete-users.dto';
 import { UpdateUserDto } from 'src/dtos/users/update-users.dto';
+import { GroupMember } from 'src/entities/groups/group-member.entity';
+import { Group } from 'src/entities/serizes/subscription.entity';
 import { User } from 'src/entities/users/user.entity';
 import { Repository } from 'typeorm';
 
@@ -15,6 +17,10 @@ import { Repository } from 'typeorm';
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Group)
+    private readonly groupRepository: Repository<Group>,
+    @InjectRepository(GroupMember)
+    private readonly groupMemberRepository: Repository<GroupMember>,
   ) {}
 
   async updateUser(updateUserDto: UpdateUserDto, userId: number) {
@@ -105,5 +111,24 @@ export class UsersService {
 
     // `password`와 `refreshToken`을 제거한 객체만 반환
     return user;
+  }
+
+  //사용자 생성 그룹 조회
+  async getUserGroupList(req: any) {
+    const userId = req.user.id;
+    const groups = await this.groupRepository.find({
+      where: { userId },
+    });
+
+    return groups;
+  }
+
+  //사용자 가입 그룹 조회
+  async getUserJoinGroupList(req: any) {
+    const userId = req.user.id;
+    const joinGroups = await this.groupMemberRepository.find({
+      where: { memberId: userId },
+    });
+    return joinGroups;
   }
 }
