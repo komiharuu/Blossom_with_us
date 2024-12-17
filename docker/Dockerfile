@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE $SERVER_PORT
 
-# Command to run the application
-CMD ["node", "dist/main"]
+# Command to run the application, using the SERVER_PORT environment variable
+CMD ["sh", "-c", "node dist/main --port ${SERVER_PORT}"]
