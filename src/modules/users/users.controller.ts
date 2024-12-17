@@ -65,8 +65,8 @@ export class UsersController {
   @UseGuards(AuthGuard('accessToken'))
   @Get('/groups')
   async getUserGroupList(@Req() req: any) {
-    const userId = req.user.id;
-    return await this.usersService.getUserGroupList(userId);
+    const memberId = req.user.id;
+    return await this.usersService.getUserGroupList(memberId);
   }
 
   /**
@@ -78,6 +78,7 @@ export class UsersController {
   @UseGuards(AuthGuard('accessToken'))
   @Get('/join-groups')
   async getUserJoinGroupList(@Req() req: any) {
-    return await this.usersService.getUserJoinGroupList(req.user);
+    const userId = req.user.id;
+    return await this.usersService.getUserJoinGroupList(userId);
   }
 }
