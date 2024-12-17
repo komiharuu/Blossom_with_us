@@ -15,7 +15,6 @@ import { CreateGroupDto } from '../../dtos/groups/create-group.dto';
 import { UpdateGroupDto } from '../../dtos/groups/update-group.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from 'src/entities/users/user.entity';
 
 @Controller('groups')
 export class GroupsController {
@@ -75,9 +74,13 @@ export class GroupsController {
   async updateGroup(
     @Param('groupId') groupId: number,
     @Body() updateGroupDto: UpdateGroupDto,
-    user: User,
+    @Req() req: any,
   ) {
-    return await this.groupsService.updateGroup(groupId, updateGroupDto, user);
+    return await this.groupsService.updateGroup(
+      groupId,
+      updateGroupDto,
+      req.user,
+    );
   }
 
   /**

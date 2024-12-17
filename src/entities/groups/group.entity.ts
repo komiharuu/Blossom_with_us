@@ -12,7 +12,6 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { SubjectType } from 'src/commons/types/subject.type';
-import { IsEnum } from 'class-validator';
 import { MeetingArea } from 'src/commons/types/reigon.type';
 import { Notice } from '../notices/notice.entity';
 import { GroupChatRoom } from './group-chat-room.entity';
@@ -42,7 +41,6 @@ export class Group {
    * 그룹 과목
    * @example "MATH"
    */
-  @IsEnum(SubjectType)
   @Column({
     type: 'enum',
     enum: SubjectType,
