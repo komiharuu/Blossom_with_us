@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hash } from 'bcrypt';
+import { MemberType } from 'src/commons/types/group.type';
 import { DeleteUserDto } from 'src/dtos/users/delete-users.dto';
 import { UpdateUserDto } from 'src/dtos/users/update-users.dto';
 import { GroupMember } from 'src/entities/groups/group-member.entity';
@@ -124,7 +125,10 @@ export class UsersService {
   //사용자 가입 그룹 조회
   async getUserJoinGroupList(memberId: number) {
     const joinGroups = await this.groupMemberRepository.find({
-      where: { memberId },
+      where: {
+        memberId: memberId,
+        type: MemberType.MEMBER,
+      },
     });
     return joinGroups;
   }
