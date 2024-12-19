@@ -122,10 +122,9 @@ export class UsersService {
   }
 
   //사용자 가입 그룹 조회
-  async getUserJoinGroupList(req: any) {
-    const userId = req.user.id;
+  async getUserJoinGroupList(memberId: number) {
     const joinGroups = await this.groupMemberRepository.find({
-      where: { memberId: userId },
+      where: { memberId },
     });
     return joinGroups;
   }
