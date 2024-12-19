@@ -112,13 +112,16 @@ export class GroupsController {
     };
   }
 
-  // /**
-  //  *  그룹 탈퇴
-  //  * @param groupId
-  //  * @returns
-  //  */
-  // @Post(':groupId/leave')
-  // async leaveGroup(@Param('groupId') groupId: number, @Req() req: any) {
-  //   return await this.groupsService.leaveGroup(groupId, req);
-  // }
+  /**
+   *  그룹 탈퇴
+   * @param groupId
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('accessToken'))
+  @Delete(':groupId/leave')
+  async leaveGroup(@Param('groupId') groupId: number, @Req() req: any) {
+    const user = req.user;
+    return await this.groupsService.leaveGroup(groupId, user);
+  }
 }

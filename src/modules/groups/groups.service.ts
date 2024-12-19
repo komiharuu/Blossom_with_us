@@ -401,45 +401,43 @@ export class GroupsService {
       await queryRunner.release(); // 트랜잭션 자원 해제
     }
   }
-  // // 그룹 탈퇴
-  // async leaveGroup(groupId: number, req: any) {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   await queryRunner.connect();
-  //   await queryRunner.startTransaction();
-  //   try {
-  //     // 그룹이 있는지 확인합니다.
-  //     const group = await queryRunner.manager.findOne(Group, {
-  //       where: { id: groupId },
-  //     });
+  // 그룹 탈퇴
+  async leaveGroup(groupId: number, user: User) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      // 그룹이 있는지 확인합니다.
+      const group = await queryRunner.manager.findOne(Group, {
+        where: { id: groupId },
+      });
 
-  //     if (!group) {
-  //       throw new NotFoundException('해당 그룹을 찾을 수 없습니다.');
-  //     }
+      if (!group) {
+        throw new NotFoundException('해당 그룹을 찾을 수 없습니다.');
+      }
+      // 그룹 멤버 증가
+      group.availableMembers += 1;
+      await queryRunner.manager.save(Group, group);
 
-  //     // 그룹 멤버 증가
-  //     group.availableMembers += 1;
-  //     await queryRunner.manager.save(Group, group);
+      // 그룹멤버 삭제 처리
+      await queryRunner.manager.update(
+        GroupMember,
+        { memberId: user.id },
+        { deletedAt: new Date() }, // 삭제 시간을 현재 시간으로 설정
+      );
 
-  //     // 그룹멤버 삭제 처리
-  //     const leaveMember = await queryRunner.manager.update(
-  //       GroupMember,
-  //       { memberId: req.user.id },
-  //       { deletedAt: new Date() }, // 삭제 시간을 현재 시간으로 설정
-  //     );
-  //     await queryRunner.manager.save(leaveMember);
+      // 삭제된 멤버의 수 반환 (예: deleteResult.affected로 확인 가능)
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
 
-  //     // 삭제된 멤버의 수 반환 (예: deleteResult.affected로 확인 가능)
-  //     await queryRunner.commitTransaction();
-  //     await queryRunner.release();
-
-  //     // 삭제된 멤버 수 또는 삭제 결과 반환
-  //     return {
-  //       message: '그룹에서 성공적으로 탈퇴되었습니다.',
-  //     };
-  //   } catch (error) {
-  //     await queryRunner.rollbackTransaction();
-  //     await queryRunner.release();
-  //     throw error;
-  //   }
-  // }
+      // 삭제된 멤버 수 또는 삭제 결과 반환
+      return {
+        message: '그룹에서 성공적으로 탈퇴되었습니다.',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+      throw error;
+    }
+  }
 }
